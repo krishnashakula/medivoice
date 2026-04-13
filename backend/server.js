@@ -194,4 +194,4 @@ app.post('/api/triage', upload.single('image'), async (req, res) => {
 });
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
-app.listen(PORT, () => console.log(`MediVoice backend running on http://localhost:${PORT} [mode: ${MODE}]`));
+app.listen(PORT, '0.0.0.0', () => console.log(`MediVoice backend running on port ${PORT} [mode: ${MODE}]`));

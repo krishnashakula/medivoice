@@ -84,6 +84,7 @@ export default function App() {
           {step === 'symptoms' && (
             <SymptomInput
               imageFile={imageFile}
+              modelMode={modelMode}
               onBack={() => setStep('capture')}
               onResult={(r) => { setResult(r); setStep('result'); }}
             />
