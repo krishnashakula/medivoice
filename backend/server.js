@@ -91,6 +91,22 @@ async function callOllama(symptoms, language, imageBase64, imageMimeType) {
   return response.data.message.content;
 }
 
+// JSON schema passed to Gemma 4 at generation time — constrains model output at the token level,
+// so the model cannot emit structurally invalid JSON. Combined with Zod, this gives two-layer
+// validation: schema-constrained generation (model level) + semantic validation (application level).
+const RESPONSE_SCHEMA = {
+  type: 'object',
+  properties: {
+    severity:        { type: 'string', enum: ['CRITICAL', 'MODERATE', 'SELF_TREAT'] },
+    urgencyHours:    { type: 'number', nullable: true },
+    likelyCauses:    { type: 'array',  items: { type: 'string' }, maxItems: 3 },
+    explanation:     { type: 'string' },
+    immediateActions:{ type: 'array',  items: { type: 'string' }, maxItems: 5 },
+    referralRequired:{ type: 'boolean' },
+  },
+  required: ['severity', 'urgencyHours', 'likelyCauses', 'explanation', 'immediateActions', 'referralRequired'],
+};
+
 async function callGoogleAI(symptoms, language, imageBase64, imageMimeType) {
   if (!GOOGLE_API_KEY || GOOGLE_API_KEY === 'your_google_ai_key_here') {
     throw new Error('Google AI API key not configured. Set GOOGLE_AI_API_KEY in .env');
@@ -109,7 +125,10 @@ async function callGoogleAI(symptoms, language, imageBase64, imageMimeType) {
   const response = await ai.models.generateContent({
     model: GOOGLE_MODEL,
     contents: [{ role: 'user', parts: contents }],
-    config: { responseMimeType: 'application/json' },
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: RESPONSE_SCHEMA,   // schema-constrained generation (Gemma 4 feature)
+    },
   });
 
   return response.text;
