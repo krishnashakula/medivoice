@@ -17,7 +17,7 @@ interface HeaderProps {
   modelMode: 'local' | 'cloud';
 }
 
-export function Header({ isOnline, modelMode }: HeaderProps) {
+export function Header({ isOnline: _isOnline, modelMode }: HeaderProps) {
   const { t } = useTranslation();
 
   return (
